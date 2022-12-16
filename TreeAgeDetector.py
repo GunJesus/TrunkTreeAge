@@ -63,7 +63,13 @@ for i in range(2, nb_components):
 
 img2 = np.zeros(output.shape)
 img2[output == max_label] = 255
-
+mask = img2.astype('uint8')
 
 plt.imshow(img2, cmap=plt.get_cmap('gray'))
+plt.show()
+# Cut out Trunk
+img = tifffile.imread('input.tif')
+trunk = cv2.bitwise_and(img, img, mask=mask)
+# Plot Trunk
+plt.imshow(trunk, cmap=plt.get_cmap('gray'))
 plt.show()
