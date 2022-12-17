@@ -142,14 +142,14 @@ if __name__ == '__main__':
     # Load original Image
     img = tifffile.imread('input.tif')
     # Plot original Image
-    plot_img(img, 'Original Image')
+    plot_img(img, 'original image')
     # Apply log transform to increase intensity.
     c = 255 / (np.log(1 + np.max(img)))
     log_transformed = c * np.log(1 + img)
     # Specify the data type to prevent issues down the line.
     img = np.array(log_transformed, dtype=np.uint8)
     # Plot the current Image
-    plot_img(img, 'Increased intensity')
+    plot_img(img, 'increased intensity')
     # Run Gaussian for Edge-Detection with Canny later on
     img_blur = cv2.GaussianBlur(img, (3, 3), 0)
     # Calculate thresholds for Edge-Detection
@@ -158,14 +158,18 @@ if __name__ == '__main__':
     # Apply threshold
     edges = cv2.Canny(img_blur, *thresh)
     # Plot progress
-    plot_img(edges, 'Found Edges')
+    plot_img(edges, 'found edges')
     # Apply dilation to make continues edges
     kernel = np.ones((3, 3), np.uint8)
     dilated_img = cv2.dilate(edges, kernel, iterations=39)
     # blur image to remove noise
     img = cv2.medianBlur(dilated_img, 255)
     # Plot basis for Mask
-    plot_img(img, 'Basic Mask')
+    plot_img(img, 'basic mask')
+    # Invert colors
+    img = cv2.bitwise_not(img)
+    # Plot new Mask
+    plot_img(img, 'inverted mask')
     # Find the largest component to use as mask later on
     img = img.astype('uint8')
     nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(img, connectivity=4)
@@ -182,16 +186,12 @@ if __name__ == '__main__':
     img2[output == max_label] = 255
     mask = img2.astype('uint8')
     # Plot Mask
-    plot_img(mask, 'inverted Mask')
-    # Invert colors --> not strictly necessary but makes it more convenient to look at
-    img = cv2.bitwise_not(mask)
-    # Plot new Mask
-    plot_img(img, 'final Mask')
+    plot_img(mask, 'final Mask')
     # Cut out Trunk
     img = tifffile.imread('input.tif')
     trunk = cv2.bitwise_and(img, img, mask=mask)
     # Plot Trunk
-    plot_img(trunk, 'Cut out Trunk')
+    plot_img(trunk, 'cut out trunk')
 
     # Approximation of the middle Point
     contours = cv2.findContours(trunk.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
@@ -232,7 +232,7 @@ if __name__ == '__main__':
     plt.imshow(img)
     plt.scatter(points[:, 0], points[:, 1])
     plt.scatter(xIntersec, yIntersec)
-    plt.title("Calculated Middle Point of Tree")
+    plt.title("calculated middle point of trunk")
     plt.show()
 
     # Count the Rings
